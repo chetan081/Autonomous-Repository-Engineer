@@ -9,7 +9,8 @@ An autonomous, multi-agent software engineering pipeline built inside n8n. This 
 
 Below is the complete blueprint of the autonomous orchestration layer designed in n8n:
 
-![n8n Workflow Architecture](workflow.png)
+![n8n Workflow Architecture](workflow.png)<img width="1586" height="692" alt="image" src="https://github.com/user-attachments/assets/2ecc6728-0188-4fc4-a711-da4ec2d38e44" />
+
 
 ### 🧠 How the Agentic Loop Works
 
@@ -39,7 +40,3 @@ Below is the complete blueprint of the autonomous orchestration layer designed i
 * **Context Preservation Across Loops:** Designing expression fields (`{{ $node["Planner Agent"].json.text }}`) capable of maintaining core project requirements stable while downstream nodes dynamically update code feedback states.
 * **Resource Optimization:** Designing a modular persona chain that isolates responsibilities, preventing context window bloating and maximizing code quality.
 
----
-
-## 📄 License
-This architecture is open-source and available under the [MIT License](LICENSE).
