@@ -1,0 +1,302 @@
+{
+  "name": "My workflow 3",
+  "nodes": [
+    {
+      "parameters": {
+        "owner": {
+          "__rl": true,
+          "value": "chetan081",
+          "mode": "list",
+          "cachedResultName": "chetan081",
+          "cachedResultUrl": "https://github.com/chetan081"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "Maze-Solver-Reinforcement-learning",
+          "mode": "list",
+          "cachedResultName": "Maze-Solver-Reinforcement-learning",
+          "cachedResultUrl": "https://github.com/chetan081/Maze-Solver-Reinforcement-learning"
+        },
+        "events": [
+          "issues"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.githubTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        124
+      ],
+      "id": "a4a39492-ecb7-482b-aa89-cca07cf333cd",
+      "name": "Github Trigger",
+      "webhookId": "d5144f43-bfc9-4a9a-a9bb-5c3cc6d89565",
+      "credentials": {
+        "githubApi": {
+          "id": "cAf9eBFrcSVZH8cb",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        296,
+        348
+      ],
+      "id": "2239da79-2fe9-410e-9e77-07e5700517bc",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "v3mChJp065tah8T2",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Issue Title: {{ $json.body.issue.title }} | Issue Description: {{ $json.body.issue.body }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are an Expert Python Solutions Architect. Your job is to read a user's feature request or bug report and create a strict, step-by-step technical implementation plan. Break the problem down logically. Define required libraries, function signatures, and data flow. DO NOT write the actual Python code. Your output must only be the architectural plan that a junior developer will follow"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        224,
+        124
+      ],
+      "id": "1ad971f4-3897-40a1-817d-cfc8a335e031",
+      "name": "Planner Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        648,
+        348
+      ],
+      "id": "fda0e490-f8b0-440e-b2a7-6afda31b1722",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "i1qKpqW67Azmz5g7",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Write code based on this plan: {{ $node[\"Planner Agent\"].json.text }}. Feedback to fix (if any): {{ $json.text }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are an Expert Python Software Engineer. Your objective is to write robust, clean Python code. RULES:  ONLY output the Python code inside a python  markdown block.  Do not include conversational text."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        576,
+        124
+      ],
+      "id": "6eb3a6cf-2378-4b37-b7c6-a438b8921d7a",
+      "name": "Coder Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Please review the following Python code for errors and logic: {{ $json.text }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a strict Lead QA Engineer. Review the provided code for syntax errors and logical flaws.  IF THE CODE HAS ISSUES: List the bugs and end your response with exactly: \"STATUS: FAIL\".  IF THE CODE IS PERFECT: Output ONLY exactly: \"STATUS: PASS\"."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        928,
+        0
+      ],
+      "id": "80eb3062-4e80-4848-95db-4058c8095ca7",
+      "name": "Reviewer Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1000,
+        224
+      ],
+      "id": "f3eed566-d242-43ac-87de-a14cac8fe901",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "v3mChJp065tah8T2",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "2074d3d1-a791-4674-ae34-81172d85009f",
+              "leftValue": "={{ $json.text }}.",
+              "rightValue": "STATUS: PASS",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1280,
+        124
+      ],
+      "id": "253f6f1d-c0d7-4b3f-9543-e7f564a29e78",
+      "name": "If"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Github Trigger": {
+      "main": [
+        [
+          {
+            "node": "Planner Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Planner Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Planner Agent": {
+      "main": [
+        [
+          {
+            "node": "Coder Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Coder Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Coder Agent": {
+      "main": [
+        [
+          {
+            "node": "Reviewer Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Reviewer Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reviewer Agent": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Coder Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "0f428bf5-f9a1-4db9-bbf4-3a71ce492501",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b03db8e44d640cb4e9816a70c17945df137883d79f1a3bdb31c10b5480c8c649"
+  },
+  "id": "MrmjRIouMi2fyf5m",
+  "tags": []
+}
